@@ -7,7 +7,7 @@ Live demo at https://lairdkruger.github.io/Void/
 - be sure to refresh the page sometimes (this is not needed if the music is normalised)
 
 Controls (key press):
-- double click for full screen mode
+- double click for full screen mode (this is a bit broken for now)
 - 7: 1 line of symmetry
 - 8: 2 lines of symmetry
 - 9: 4 lines of symmetry
