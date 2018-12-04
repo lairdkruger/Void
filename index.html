@@ -1,0 +1,160 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Void Visualizer</title>
+        
+        <script src="src/canvas.js"></script>
+        <script src="src/creative_coding.js"></script>
+        <script src="src/mic.js"></script>
+        
+    </head>
+    
+    <body>
+        
+        <script>
+            //create canvas
+            var ctx = createCanvas("canvas1");
+            
+            //double click fullscreen event listener
+            //Double Click to go FULLSCREEN
+            function getreqfullscreen(){
+                var root = document.documentElement
+                return root.requestFullscreen || root.webkitRequestFullscreen || root.mozRequestFullScreen || root.msRequestFullscreen
+            }
+            
+            canvas.addEventListener('dblclick', function(){ 
+
+                //usage: getreqfullscreen().call(targetelement) // open full screen on targetelement
+            
+                var globalreqfullscreen = getreqfullscreen() // get supported version of requestFullscreen()
+            
+                globalreqfullscreen.call(document.documentElement);
+            });
+            
+            document.addEventListener('keypress', function (e) {
+                    
+                if (e.keyCode == 55) {
+                    //7: symmetry number: 2
+                    symmetry_num = 2;
+                } else if (e.keyCode == 56) {
+                    //8: symmetry number: 4
+                    symmetry_num = 4;
+                } else if (e.keyCode == 57) {
+                    //9: symmetry number: 8
+                    symmetry_num = 8;
+                } else if (e.keyCode == 48) {
+                    //0: symmetry number: 20
+                    symmetry_num = 20;
+                }
+                
+            }, false);
+            
+            
+            //set to 128 for digitised effect, otherwise 512 is smooth
+            var mic = new Microphone(256);
+            
+            //number of lines of symmetry
+            var symmetry_num = 4;
+            
+            //particles
+            var particles = [];
+            var base = [];
+            var num_particles = 160;
+            var radius = 300;
+            var max_distance = 0;
+            ctx.lineWidth = 0.5;
+    
+            //colours
+            var line_colour = rgb(255, 255, 255);
+            var background_colour = 0;
+            
+            
+            //add a number of particles to particles
+            for (i = 0; i < num_particles; i++) {
+                addParticle(i);
+                addBase(i);
+            }
+        
+            function addParticle(_i) {
+                var _angle = radians(distributeAngles(i, num_particles)) + Math.PI / 2;
+                var particle = {
+                    x: 0,
+                    y: 0,
+                    angle: _angle,
+                    radius: radius,
+                }
+                particles.push(particle);
+            }
+            
+            function addBase(_i) {
+                var _angle = radians(distributeAngles(i, num_particles)) + Math.PI / 2;
+                var particle = {
+                    angle: _angle,
+                    radius: radius,
+                    x: w/2 + Math.cos(_angle) * (radius),
+                    y: h/2 + Math.sin(_angle) * (radius)
+                }
+                base.push(particle);
+            }
+            
+            
+            function drawParticles() {
+                for (j = 0; j < symmetry_num; j++) {
+                    for (i = 0; i < num_particles / symmetry_num; i++) {
+                        var particle_id = (num_particles / symmetry_num) * j;
+                        waveform = mic.mapWaveform(i, num_particles / symmetry_num, 1, h / 2);
+                        
+                        if (j % 2 == 0) {
+                            particle = particle_id + (num_particles / symmetry_num) - i - 1;
+                            p = particles[particle];
+                        } else {
+                            p = particles[particle_id + i];
+                        }
+                        
+                        p.x = w/2 + Math.cos(p.angle) * (p.radius * waveform);
+                        p.y = h/2 + Math.sin(p.angle) * (p.radius * waveform);
+                    }
+                }
+            }
+            
+            
+            function drawConnections() {
+                for (i = 0; i < num_particles; i++) {
+                    max_distance = map(mic.getRMS(mic.spectrum), 0, 100, 0, 15) ** 2;
+                    
+                    for (j = 0; j < num_particles; j++) {
+                        p1 = base[i];
+                        p2 = particles[j];
+                        
+                        //draw line between them if they're close
+                        current_distance = dist(p1.x, p1.y, p2.x, p2.y);
+                        if (current_distance <= max_distance) {
+                            ctx.line(p1.x, p1.y, p2.x, p2.y);
+                        }
+                    }
+                }
+            }
+            
+            //requests animation frame
+            function draw(){
+                frameRate = 120;
+                
+                if (mic.getRMS(mic.spectrum) > mic.peak_volume - 20) {
+                    line_colour = rgb(0, 0, 0);
+                    background_colour = 255;
+                    ctx.background(background_colour, 1);
+                } else {
+                    line_colour = rgb(255, 255, 255);
+                    background_colour = 0;
+                    ctx.background(background_colour, map(mic.getRMS(mic.spectrum), 0, 100, 0.25, 0.02));
+                }
+                
+                ctx.strokeStyle = line_colour;
+                
+                drawParticles();
+                drawConnections();
+            }
+            
+        </script>
+    </body>
+</html>
