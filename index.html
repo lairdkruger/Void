@@ -17,19 +17,27 @@
             
             //double click fullscreen event listener
             //Double Click to go FULLSCREEN
-            function getreqfullscreen(){
+            function getreqfullscreen() {
                 var root = document.documentElement
                 return root.requestFullscreen || root.webkitRequestFullscreen || root.mozRequestFullScreen || root.msRequestFullscreen
             }
             
-            canvas.addEventListener('dblclick', function(){ 
-
+            canvas.addEventListener('dblclick', function() {
                 //usage: getreqfullscreen().call(targetelement) // open full screen on targetelement
-            
                 var globalreqfullscreen = getreqfullscreen() // get supported version of requestFullscreen()
             
                 globalreqfullscreen.call(document.documentElement);
+                
+                fullscreen = 1;
             });
+            
+            document.addEventListener('keydown', function (e) {
+                if (e.keyCode === 27) {
+                    location.reload();
+                    resetPosition();
+                    console.log("reload");
+                }
+            }, false);
             
             document.addEventListener('keypress', function (e) {
                     
@@ -49,9 +57,9 @@
                 
             }, false);
             
-            
             //set to 128 for digitised effect, otherwise 512 is smooth
             var mic = new Microphone(256);
+            var fullscreen = 0;
             
             //number of lines of symmetry
             var symmetry_num = 4;
@@ -60,7 +68,7 @@
             var particles = [];
             var base = [];
             var num_particles = 160;
-            var radius = 300;
+            var radius = 260;
             var max_distance = 0;
             ctx.lineWidth = 0.5;
     
@@ -68,13 +76,12 @@
             var line_colour = rgb(255, 255, 255);
             var background_colour = 0;
             
-            
             //add a number of particles to particles
             for (i = 0; i < num_particles; i++) {
                 addParticle(i);
                 addBase(i);
-            }
-        
+            }       
+                
             function addParticle(_i) {
                 var _angle = radians(distributeAngles(i, num_particles)) + Math.PI / 2;
                 var particle = {
@@ -95,6 +102,19 @@
                     y: h/2 + Math.sin(_angle) * (radius)
                 }
                 base.push(particle);
+            }
+            
+            //clears arrays and refills them with recentered variables
+            function resetPosition() {
+                base.length = 0;
+                particles.length = 0;
+                
+                for (i = 0; i < num_particles; i++) {
+                    addBase(i);
+                    addParticle(i);
+                }
+                
+                console.log("repositioned");
             }
             
             
@@ -123,21 +143,27 @@
                     max_distance = map(mic.getRMS(mic.spectrum), 0, 100, 0, 15) ** 2;
                     
                     for (j = 0; j < num_particles; j++) {
-                        p1 = base[i];
-                        p2 = particles[j];
+                        b = base[i];
+                        p = particles[j];
                         
                         //draw line between them if they're close
-                        current_distance = dist(p1.x, p1.y, p2.x, p2.y);
+                        current_distance = dist(b.x, b.y, p.x, p.y);
                         if (current_distance <= max_distance) {
-                            ctx.line(p1.x, p1.y, p2.x, p2.y);
+                            ctx.line(b.x, b.y, p.x, p.y);
                         }
                     }
                 }
             }
+
             
             //requests animation frame
             function draw(){
                 frameRate = 120;
+                
+                if (fullscreen == 1) {
+                    resetPosition();
+                    fullscreen = 0;
+                }
                 
                 if (mic.getRMS(mic.spectrum) > mic.peak_volume - 20) {
                     line_colour = rgb(0, 0, 0);
