@@ -3,8 +3,11 @@
         <meta name="author" content="Laird Kruger">
         <meta name="description" content="Real-Time Sound Visualizer for Chrome">
         <meta charset="utf-8">
+        
         <title>Void Visualizer</title>
         
+        <!-- CSS Style Sheet -->
+        <link rel="stylesheet" href="src/style.css">
         <script src="src/canvas.js"></script>
         <script src="src/creative_coding.js"></script>
         <script src="src/mic.js"></script>
@@ -13,176 +16,11 @@
     
     <body>
         
+        <button onclick="myFunction()">Button Text</button>
+        
         <script>
-            //create canvas
-            var ctx = createCanvas("canvas1");
             
-            //double click fullscreen event listener
-            //Double Click to go FULLSCREEN
-            function getreqfullscreen() {
-                var root = document.documentElement
-                return root.requestFullscreen || root.webkitRequestFullscreen || root.mozRequestFullScreen || root.msRequestFullscreen
-            }
-            
-            canvas.addEventListener('dblclick', function() {
-                //usage: getreqfullscreen().call(targetelement) // open full screen on targetelement
-                var globalreqfullscreen = getreqfullscreen() // get supported version of requestFullscreen()
-            
-                globalreqfullscreen.call(document.documentElement);
-                
-                fullscreen = 1;
-            });
-            
-            document.addEventListener('keydown', function (e) {
-                if (e.keyCode === 27) {
-                    location.reload();
-                    resetPosition();
-                    console.log("reload");
-                }
-            }, false);
-            
-            document.addEventListener('keypress', function (e) {
-                    
-                if (e.keyCode == 55) {
-                    //7: symmetry number: 2
-                    symmetry_num = 2;
-                } else if (e.keyCode == 56) {
-                    //8: symmetry number: 4
-                    symmetry_num = 4;
-                } else if (e.keyCode == 57) {
-                    //9: symmetry number: 8
-                    symmetry_num = 8;
-                } else if (e.keyCode == 48) {
-                    //0: symmetry number: 20
-                    symmetry_num = 20;
-                }
-                
-            }, false);
-            
-            //set to 128 for digitised effect, otherwise 512 is smooth
-            var mic = new Microphone(256);
-            var fullscreen = 0;
-            
-            //number of lines of symmetry
-            var symmetry_num = 4;
-            
-            //particles
-            var particles = [];
-            var base = [];
-            var num_particles = 160;
-            var radius = 260;
-            var max_distance = 0;
-            ctx.lineWidth = 0.5;
-    
-            //colours
-            var line_colour = rgb(255, 255, 255);
-            var background_colour = 0;
-            
-            //add a number of particles to particles
-            for (i = 0; i < num_particles; i++) {
-                addParticle(i);
-                addBase(i);
-            }       
-                
-            function addParticle(_i) {
-                var _angle = radians(distributeAngles(i, num_particles)) + Math.PI / 2;
-                var particle = {
-                    x: 0,
-                    y: 0,
-                    angle: _angle,
-                    radius: radius,
-                }
-                particles.push(particle);
-            }
-            
-            function addBase(_i) {
-                var _angle = radians(distributeAngles(i, num_particles)) + Math.PI / 2;
-                var particle = {
-                    angle: _angle,
-                    radius: radius,
-                    x: w/2 + Math.cos(_angle) * (radius),
-                    y: h/2 + Math.sin(_angle) * (radius)
-                }
-                base.push(particle);
-            }
-            
-            //clears arrays and refills them with recentered variables
-            function resetPosition() {
-                base.length = 0;
-                particles.length = 0;
-                
-                for (i = 0; i < num_particles; i++) {
-                    addBase(i);
-                    addParticle(i);
-                }
-                
-                console.log("repositioned");
-            }
-            
-            
-            function drawParticles() {
-                for (j = 0; j < symmetry_num; j++) {
-                    for (i = 0; i < num_particles / symmetry_num; i++) {
-                        var particle_id = (num_particles / symmetry_num) * j;
-                        waveform = mic.mapWaveform(i, num_particles / symmetry_num, 1, h / 2);
-                        
-                        if (j % 2 == 0) {
-                            particle = particle_id + (num_particles / symmetry_num) - i - 1;
-                            p = particles[particle];
-                        } else {
-                            p = particles[particle_id + i];
-                        }
-                        
-                        p.x = w/2 + Math.cos(p.angle) * (p.radius * waveform);
-                        p.y = h/2 + Math.sin(p.angle) * (p.radius * waveform);
-                    }
-                }
-            }
-            
-            
-            function drawConnections() {
-                for (i = 0; i < num_particles; i++) {
-                    max_distance = map(mic.getRMS(mic.spectrum), 0, 100, 0, 15) ** 2;
-                    
-                    for (j = 0; j < num_particles; j++) {
-                        b = base[i];
-                        p = particles[j];
-                        
-                        //draw line between them if they're close
-                        current_distance = dist(b.x, b.y, p.x, p.y);
-                        if (current_distance <= max_distance) {
-                            ctx.line(b.x, b.y, p.x, p.y);
-                        }
-                    }
-                }
-            }
-
-            
-            //requests animation frame
-            function draw(){
-                frameRate = 120;
-                
-                if (fullscreen == 1) {
-                    resetPosition();
-                    fullscreen = 0;
-                }
-                
-                if (mic.getRMS(mic.spectrum) > mic.peak_volume - 20) {
-                    line_colour = rgb(0, 0, 0);
-                    background_colour = 255;
-                    ctx.background(background_colour, 1);
-                } else {
-                    line_colour = rgb(255, 255, 255);
-                    background_colour = 0;
-                    ctx.background(background_colour, map(mic.getRMS(mic.spectrum), 0, 100, 0.25, 0.02));
-                }
-                
-                ctx.strokeStyle = line_colour;
-                
-                drawParticles();
-                drawConnections();
-            }
-            
+            var _0x3a7f=['radius','angle','fillStyle','getRMS','spectrum','peak_volume','background','strokeStyle','canvas1','documentElement','requestFullscreen','webkitRequestFullscreen','mozRequestFullScreen','dblclick','call','addEventListener','keydown','keyCode','reload','log','keypress','lineWidth','push','cos','sin','length','mapWaveform'];(function(_0x492f32,_0x408c5b){var _0x17d59b=function(_0x685497){while(--_0x685497){_0x492f32['push'](_0x492f32['shift']());}};_0x17d59b(++_0x408c5b);}(_0x3a7f,0x116));var _0x19fe=function(_0x11b213,_0x59d2b8){_0x11b213=_0x11b213-0x0;var _0x1b4227=_0x3a7f[_0x11b213];return _0x1b4227;};var ctx=createCanvas(_0x19fe('0x0'));function getreqfullscreen(){var _0xcda0a0=document[_0x19fe('0x1')];return _0xcda0a0[_0x19fe('0x2')]||_0xcda0a0[_0x19fe('0x3')]||_0xcda0a0[_0x19fe('0x4')]||_0xcda0a0['msRequestFullscreen'];}canvas['addEventListener'](_0x19fe('0x5'),function(){var _0x49ad2c=getreqfullscreen();_0x49ad2c[_0x19fe('0x6')](document['documentElement']);fullscreen=0x1;});document[_0x19fe('0x7')](_0x19fe('0x8'),function(_0x152f7c){if(_0x152f7c[_0x19fe('0x9')]===0x1b){location[_0x19fe('0xa')]();resetPosition();console[_0x19fe('0xb')](_0x19fe('0xa'));}},![]);document[_0x19fe('0x7')](_0x19fe('0xc'),function(_0x4bbba2){if(_0x4bbba2['keyCode']==0x37){}},![]);var mic=new Microphone(0x100);var fullscreen=0x0;var symmetry_num=0x2;var particles=[];var base=[];var num_particles=0xa0;var radius=h/0x3;var max_distance=0x0;ctx[_0x19fe('0xd')]=0x1;var line_colour=rgb(0xff,0xff,0xff);var background_colour=0x0;for(i=0x0;i<num_particles;i++){addParticle(i);addBase(i);}function addParticle(_0x296c87){var _0x64d1f0=radians(distributeAngles(i,num_particles))+Math['PI']/0x2;var _0x2d43f3={'x':0x0,'y':0x0,'angle':_0x64d1f0,'radius':radius};particles[_0x19fe('0xe')](_0x2d43f3);}function addBase(_0x14691e){var _0x52e39=radians(distributeAngles(i,num_particles))+Math['PI']/0x2;var _0x20aa74={'angle':_0x52e39,'radius':radius,'x':w/0x2+Math[_0x19fe('0xf')](_0x52e39)*radius,'y':h/0x2+Math[_0x19fe('0x10')](_0x52e39)*radius};base[_0x19fe('0xe')](_0x20aa74);}function resetPosition(){base[_0x19fe('0x11')]=0x0;particles[_0x19fe('0x11')]=0x0;for(i=0x0;i<num_particles;i++){addBase(i);addParticle(i);}}function drawParticles(){for(j=0x0;j<symmetry_num;j++){for(i=0x0;i<num_particles/symmetry_num;i++){var _0x20f2d4=num_particles/symmetry_num*j;waveform=mic[_0x19fe('0x12')](i,num_particles/symmetry_num,0x1,h);if(j%0x2==0x0){particle=_0x20f2d4+num_particles/symmetry_num-i-0x1;p=particles[particle];}else{p=particles[_0x20f2d4+i];}p['x']=w/0x2+Math[_0x19fe('0xf')](p['angle'])*(p[_0x19fe('0x13')]*waveform);p['y']=h/0x2+Math['sin'](p[_0x19fe('0x14')])*(p[_0x19fe('0x13')]*waveform);ctx[_0x19fe('0x15')]=rgb(0xff);}}}function drawConnections(){for(i=0x0;i<num_particles;i++){max_distance=map(mic[_0x19fe('0x16')](mic[_0x19fe('0x17')]),0x0,0x64,0x0,0x14)**0x2;for(j=0x0;j<num_particles;j++){b=base[i];p=particles[j];current_distance=dist(b['x'],b['y'],p['x'],p['y']);if(current_distance<=max_distance){ctx['line'](b['x'],b['y'],p['x'],p['y']);}}}}function draw(){frameRate=0x78;volume=mic[_0x19fe('0x16')](mic[_0x19fe('0x17')]);peak_vol=mic[_0x19fe('0x18')];if(fullscreen==0x1){resetPosition();fullscreen=0x0;}if(volume<peak_vol-0x28){symmetry_num=0x2;line_colour=rgb(0xff,0xff,0xff);background_colour=0x0;ctx[_0x19fe('0x19')](background_colour,map(volume,0x0,0x64,0.25,0.02));}else if(volume<peak_vol-0x14){symmetry_num=0x4;line_colour=rgb(0xff,0xff,0xff);background_colour=0x0;ctx['background'](background_colour,map(volume,0x0,0x64,0.25,0.02));}else if(volume>peak_vol-0x14){line_colour=rgb(0x0,0x0,0x0);background_colour=0xff;ctx[_0x19fe('0x19')](background_colour,0x1);symmetry_num=0x8;}ctx[_0x19fe('0x1a')]=line_colour;drawParticles();drawConnections();}
         </script>
     </body>
 </html>
